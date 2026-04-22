@@ -26,6 +26,7 @@ BITNAMI_COMMIT=${BITNAMI_COMMIT:-83fa2f7}
 GO_VERSION=${GO_VERSION:-1.26.2}
 
 BUILD_HOME=$(pwd)
+SCRIPT_PATH=$(dirname "$(realpath "$0")")
 OS_NAME=$(grep ^PRETTY_NAME /etc/os-release | cut -d= -f2)
 
 # ----------------------------------------------------------------------------
@@ -110,11 +111,14 @@ git checkout "$PACKAGE_VERSION"
 # Apply ppc64le patch
 # ----------------------------------------------------------------------------
 PATCH_FILE="redis-bv_${PACKAGE_VERSION}.patch"
-wget "https://raw.githubusercontent.com/ppc64le/build-scripts/master/r/redis-bv/${PATCH_FILE}"
-
-echo "Applying patch ${PATCH_FILE}"
-if ! git apply "${PATCH_FILE}"; then
-    echo "------------------$PACKAGE_NAME:patch_fails---------------------------------------"
+if [ -f "$SCRIPT_PATH/r/redis-bv/$PATCH_FILE" ]; then
+    echo "Applying patch $SCRIPT_PATH/r/redis-bv/$PATCH_FILE"
+    if ! git apply "$SCRIPT_PATH/r/redis-bv/$PATCH_FILE"; then
+        echo "------------------$PACKAGE_NAME:patch_fails---------------------------------------"
+        exit 1
+    fi
+else
+    echo "Patch file $SCRIPT_PATH/r/redis-bv/$PATCH_FILE not found"
     exit 1
 fi
 

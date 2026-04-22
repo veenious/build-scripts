@@ -120,6 +120,7 @@ fi
 
 export BUILD_WITH_MODULES=yes
 export DISABLE_WERRORS=yes
+export IGNORE_MISSING_DEPS=1
 unset INSTALL_RUST_TOOLCHAIN || true
 
 make MALLOC=libc EXTRA_CFLAGS="$EXTRA_CFLAGS" -j "$(nproc)" all IGNORE_MISSING_DEPS=1 || true
@@ -208,19 +209,27 @@ if ! make MALLOC=libc EXTRA_CFLAGS="$EXTRA_CFLAGS" -j "$(nproc)" all IGNORE_MISS
 fi
 
 # ----------------------------------------------------------------------------
-# Install Redis to /usr/local
+# Collect Redis binaries and modules
 # ----------------------------------------------------------------------------
-make PREFIX=/usr/local install
+mkdir -p /root/redis/bin /root/redis/modules
+
+find "$BUILD_HOME/redis/src" -maxdepth 1 -type f -executable -name "redis-*" \
+    -exec cp {} /root/redis/bin/ \;
+
+cp "$BUILD_HOME/redis/modules/redisbloom/redisbloom.so"           /root/redis/modules/
+cp "$BUILD_HOME/redis/modules/redisearch/redisearch.so"           /root/redis/modules/
+cp "$BUILD_HOME/redis/modules/redisjson/rejson.so"                /root/redis/modules/
+cp "$BUILD_HOME/redis/modules/redistimeseries/redistimeseries.so" /root/redis/modules/
+
+ls -lh /root/redis/bin/ /root/redis/modules/
 
 # ----------------------------------------------------------------------------
-# Collect modules
+# Install to /usr/local
 # ----------------------------------------------------------------------------
-mkdir -p /usr/local/lib/redis/modules
+mkdir -p /usr/local/bin /usr/local/lib/redis/modules
 
-cp "$BUILD_HOME/redis/modules/redisbloom/redisbloom.so"           /usr/local/lib/redis/modules/
-cp "$BUILD_HOME/redis/modules/redisearch/redisearch.so"           /usr/local/lib/redis/modules/
-cp "$BUILD_HOME/redis/modules/redisjson/rejson.so"                /usr/local/lib/redis/modules/
-cp "$BUILD_HOME/redis/modules/redistimeseries/redistimeseries.so" /usr/local/lib/redis/modules/
+cp -r /root/redis/bin/. /usr/local/bin/
+cp -r /root/redis/modules/. /usr/local/lib/redis/modules/
 
 ls -lh /usr/local/bin/redis-* /usr/local/lib/redis/modules/
 

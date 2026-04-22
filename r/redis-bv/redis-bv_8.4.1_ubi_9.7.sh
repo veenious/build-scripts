@@ -302,18 +302,19 @@ rm -rf /var/cache/yum /var/tmp/*
 # ----------------------------------------------------------------------------
 cd "$BUILD_HOME/redis"
 
-if ! make -C src test MALLOC=libc --single unit/introspection --ignore-tcl-errors; then
-    echo "Retrying test suite while skipping flaky test tests/unit/introspection.tcl"
-    if ! make -C src test MALLOC=libc --skipunit unit/introspection; then
-        echo "------------------$PACKAGE_NAME:install_success_but_test_fails---------------------"
-        echo "$PACKAGE_URL $PACKAGE_NAME"
-        echo "$PACKAGE_NAME | $PACKAGE_URL | $PACKAGE_VERSION | $OS_NAME | GitHub | Fail | Install_success_but_test_Fails"
-        exit 2
-    fi
-fi
+cat <<'EOF' > skipfile
+*unit/introspection*
+EOF
 
-echo "------------------$PACKAGE_NAME:install_&_test_both_success-------------------------"
-echo "$PACKAGE_URL $PACKAGE_NAME"
-echo "$PACKAGE_NAME | $PACKAGE_URL | $PACKAGE_VERSION | $OS_NAME | GitHub | Pass | Both_Install_and_Test_Success"
-exit 0
+if ! ./runtest --skipfile skipfile; then
+    echo "------------------$PACKAGE_NAME:install_success_but_test_fails---------------------"
+    echo "$PACKAGE_URL $PACKAGE_NAME"
+    echo "$PACKAGE_NAME | $PACKAGE_URL | $PACKAGE_VERSION | $OS_NAME | GitHub | Fail | Install_success_but_test_Fails"
+    exit 2
+else
+    echo "------------------$PACKAGE_NAME:install_&_test_both_success-------------------------"
+    echo "$PACKAGE_URL $PACKAGE_NAME"
+    echo "$PACKAGE_NAME | $PACKAGE_URL | $PACKAGE_VERSION | $OS_NAME | GitHub | Pass | Both_Install_and_Test_Success"
+    exit 0
+fi
 fi

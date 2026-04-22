@@ -111,14 +111,14 @@ git checkout "$PACKAGE_VERSION"
 # Apply ppc64le patch
 # ----------------------------------------------------------------------------
 PATCH_FILE="redis-bv_${PACKAGE_VERSION}.patch"
-if [ -f "$SCRIPT_PATH/r/redis-bv/$PATCH_FILE" ]; then
-    echo "Applying patch $SCRIPT_PATH/r/redis-bv/$PATCH_FILE"
-    if ! git apply "$SCRIPT_PATH/r/redis-bv/$PATCH_FILE"; then
+if [ -f "$SCRIPT_PATH/$PATCH_FILE" ]; then
+    echo "Applying patch $SCRIPT_PATH/$PATCH_FILE"
+    if ! git apply "$SCRIPT_PATH/$PATCH_FILE"; then
         echo "------------------$PACKAGE_NAME:patch_fails---------------------------------------"
         exit 1
     fi
 else
-    echo "Patch file $SCRIPT_PATH/r/redis-bv/$PATCH_FILE not found"
+    echo "Patch file $SCRIPT_PATH/$PATCH_FILE not found"
     exit 1
 fi
 

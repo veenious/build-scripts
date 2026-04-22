@@ -213,6 +213,11 @@ RUN find /build/redis/modules -maxdepth 2 -name "*.so" | grep -v "deps\|src/bin\
     cp /build/redis/modules/redistimeseries/redistimeseries.so /root/redis/modules/ && \
     ls -lh /root/redis/bin/ /root/redis/modules/
 
+# Erase Python RPM packages after build is complete (not needed in final image)
+RUN yum clean all && \
+    rm -rf /var/cache/yum && \
+    rpm -e --nodeps python3 python3-devel python3-libs
+
 FROM registry.access.redhat.com/ubi9/ubi:9.7
 LABEL com.vmware.cp.artifact.flavor="sha256:c50c90cfd9d12b445b011e6ad529f1ad3daea45c26d20b00732fae3cd71f6a83" \
       org.opencontainers.image.documentation="https://github.com/bitnami/containers/tree/main/bitnami/redis/README.md" \
@@ -233,7 +238,8 @@ RUN yum update -y && \
     yum install -y git wget acl ca-certificates curl-minimal gzip glibc openssl procps tar libgcc libgomp libstdc++ && \
     yum upgrade -y --allowerasing && \
     yum clean all && \
-    rm -rf /var/cache/yum /var/tmp/*
+    rm -rf /var/cache/yum /var/tmp/* && \
+    rpm -e --nodeps python3 python3-libs 2>/dev/null || true
 
 RUN chmod g+rwX /opt/bitnami
 RUN ln -s /opt/bitnami/scripts/redis/entrypoint.sh /entrypoint.sh
